@@ -1,8 +1,21 @@
 # Operators for Complex Queries
 
-MongoDB supports a variety of operators for creating complex queries. Here are examples of how to use these operators, including $lt (less than), $gt (greater than), $eq (equal), $ne (not equal), $in (in array), $nin (not in array), $and, $or, $not, and $exists.
+MongoDB supports a variety of operators for creating complex queries. 
 
+All operators are preceeded by `$` sign
 
+Here are examples of how to use these operators, including:
+- `$lt` (less than), 
+- `$lte` (less than or equal to), 
+- `$gt` (greater than), 
+- `$gte` (greater than or equal to), 
+- `$eq` (equal), 
+- `$ne` (not equal), 
+- `$in` (in array), 
+- `$nin` (not in array),
+- `$and`, `$or`, `$not`, and `$exists.`
+
+### Consider the bellow dataset
 ```javascript
 [
   { "name": "Alice", "age": 24, "grade": "B", "address": "123 Main St", "fullTime": true },
@@ -15,18 +28,25 @@ MongoDB supports a variety of operators for creating complex queries. Here are e
 ```
 
 ## Basic Operators
-#### Less Than ($lt)
+#### Less Than ($lt)/ ($lte)
 Find students younger than 23 years:
 
 ```javascript
 db.students.find({ age: { $lt: 23 } })
 ```
 
-#### Greater Than ($gt)
+#### Greater Than ($$gt) / ($gte)
 Find students older than 23 years:
 
 ```javascript
 db.students.find({ age: { $gt: 23 } })
+```
+
+#### Range of Values
+Find students aged between 22 and 27 years
+
+```javascript
+db.students.find({ age: { $gte: 22, $lte: 27 } })
 ```
 
 #### Equal ($eq)
@@ -71,6 +91,13 @@ Find students younger than 23 or whose grade is "A":
 
 ```javascript
 db.students.find({ $or: [{ age: { $lt: 23 } }, { grade: "A" }] })
+```
+
+#### NOr ($nor)
+Find students neither younger than 23 nor with grade "A":
+- Selects the documents that fail all the expressions in the array i.e `Dont match` any specified conditions
+```javascript
+db.students.find({ $nor: [{ age: { $lt: 23 } }, { grade: "A" }] })
 ```
 
 #### Not ($not)
