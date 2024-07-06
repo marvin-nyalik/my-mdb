@@ -36,7 +36,7 @@ MongoDB stores data in databases, which in turn have collections that store docu
   ```
 - **Create a Collection**: Use the `createCollection` method.
   ```javascript
-  db.createCollection("myCollection")
+  db.createCollection("myCollection");
   ```
 
 ## CRUD Operations
@@ -44,24 +44,57 @@ MongoDB stores data in databases, which in turn have collections that store docu
 CRUD stands for Create, Read, Update, and Delete operations. These are the basic operations you can perform on your data.
 
 - **Create**: Insert documents into a collection.
+
   ```javascript
-  db.myCollection.insertOne({ name: "John", age: 30 })
-  db.myCollection.insertMany([{ name: "Jane", age: 25 }, { name: "Doe", age: 22 }])
+  db.myCollection.insertOne({ name: "John", age: 30 });
+  db.myCollection.insertMany([
+    { name: "Jane", age: 25 },
+    { name: "Doe", age: 22 },
+  ]);
+  db.students.insertOne({name:"Aleagy", age:27, gpa:4.5,joined:new Date("2015-08-31"),friends:["Jane", "Lilian", "Jacob"],address:{street:"234 Nyamasaria str"},city:"Kisumu", zip:6578})
   ```
+  - Documents can contain arrays, booleans, dates, and other nested documents.
+  ````javascript
+
+  db.myCollection.insertMany([
+    {name:"Almond",
+     age:30, 
+     gpa:2.7,
+     married: false, 
+     joined: new Date("2018-02-15"), 
+     left: null, 
+     friends: ["Adryan", "Mercy", "Joel"], 
+     address:{street:"123 Fake Str",
+              city:"New York",
+              zipcode: 12345}},
+    {name:"Aleagy", 
+    age:27, 
+    gpa:4.5,
+    married: true,
+    joined:new Date("2015-08-31"),
+    friends:["Jane", "Lilian", "Jacob"],
+    address:{street:"234 Nyamasaria str",
+             city:"Kisumu", 
+             zip:6578}}])
+  ````
+
 - **Read**: Query documents from a collection.
   ```javascript
-  db.myCollection.find({ name: "John" })
-  db.myCollection.find().pretty()
+  db.myCollection.find({ name: "John" });
+  db.myCollection.find().pretty();
   ```
 - **Update**: Modify existing documents in a collection.
   ```javascript
-  db.myCollection.updateOne({ name: "John" }, { $set: { age: 31 } })
-  db.myCollection.updateMany({ age: { $lt: 25 } }, { $set: { status: "young" } })
+  db.myCollection.updateOne({ name: "John" }, { $set: { age: 31 } });
+  db.myCollection.updateMany(
+    { age: { $lt: 25 } },
+    { $set: { status: "young" } }
+  );
   ```
 - **Delete**: Remove documents from a collection.
   ```javascript
-  db.myCollection.deleteOne({ name: "John" })
-  db.myCollection.deleteMany({ age: { $lt: 25 } })
+  db.myCollection.deleteOne({ name: "John" });
+  db.myCollection.deleteMany({ age: { $lt: 25 } });
   ```
 
 ## Indexing
@@ -70,11 +103,11 @@ Indexes improve query performance. Learn how to create and use indexes.
 
 - **Create Index**: Use the `createIndex` method.
   ```javascript
-  db.myCollection.createIndex({ name: 1 })
+  db.myCollection.createIndex({ name: 1 });
   ```
 - **View Indexes**: List all indexes in a collection.
   ```javascript
-  db.myCollection.getIndexes()
+  db.myCollection.getIndexes();
   ```
 
 ## Aggregation
@@ -85,8 +118,8 @@ Aggregation operations process data records and return computed results. They ar
   ```javascript
   db.myCollection.aggregate([
     { $match: { age: { $gte: 30 } } },
-    { $group: { _id: "$age", total: { $sum: 1 } } }
-  ])
+    { $group: { _id: "$age", total: { $sum: 1 } } },
+  ]);
   ```
 - **More Aggregation Operations**:
   - `$project`: Reshape each document in the stream.
@@ -107,4 +140,3 @@ If you find any issues or want to contribute to this repository, feel free to op
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
