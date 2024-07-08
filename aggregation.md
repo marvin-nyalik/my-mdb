@@ -17,7 +17,7 @@ db.students.aggregate([
 ])
 ```
 
-2. **`$group`**:  The `$group` stage in MongoDB's aggregation framework is used to group documents by a specified identifier expression and to apply accumulator expressions, such as `$sum`, `$avg`, `$min`, `$max`, etc., to each group of documents..
+2. **`$group`**:  The `$group` stage in MongoDB's aggregation framework is used to group documents by a specified identifier expression and to apply accumulator expressions, such as `$sum`, `$avg`, `$min`, `$max`, `$push`, `$addToSet`, `$first`, `$last` etc., to each group of documents..
 
 ```javascript
 db.students.aggregate([
@@ -25,9 +25,177 @@ db.students.aggregate([
     $group: {
       _id: "$grade",
       averageAge: { $avg: "$age" },
-      totalStudents: { $sum: 1 }
+      totalStudents: { $sum: 1 },
+      oldest: { $max: "$age"}
+    }
+  }
+])
+
+// field paths vs Expressions vs Literal values
+db.sales.aggregate([
+  {
+    $group: {
+      _id: "$productId",
+      totalQuantity: { $sum: 100 },   // Literal value
+      averagePrice: { $avg: "$price" },       // Field path
+      minPrice: { $min: "$price" },           // Field path
+      maxPrice: { $max: "$price" },           // Field path
+      totalRevenue: { $sum: { $multiply: ["$price", "$quantity"] } }, // Expression
+    }
+  }
+]);
+```
+
+3. `$project`: Reshapes each document in the stream, such as by adding, removing, or renaming fields.
+
+```javascript
+db.sales.aggregate([
+  {
+    $group: {
+      _id: "$productId",
+      totalQuantity: { $sum: "$quantity" },
+      averagePrice: { $avg: "$price" },
+      minPrice: { $min: "$price" },
+      maxPrice: { $max: "$price" },
+      totalRevenue: { $sum: { $multiply: ["$price", "$quantity"] } }
+    }
+  },
+  {
+    $project: {
+      productId: "$_id",
+      totalQuantity: 1,
+      averagePrice: 1,
+      minPrice: 1,
+      maxPrice: 1,
+      totalRevenue: 1,
+      status: "checked"
+    }
+  }
+]);
+```
+
+4. `$sort`: Sorts all input documents and returns them to the pipeline in sorted order.
+
+```javascript
+db.sales.aggregate([
+  {
+    $sort: {
+      totalQuantity: -1
     }
   }
 ])
 ```
 
+5. `$limit` and `$skip`, both take integers
+
+```javascript
+db.sales.aggregate([
+  { $limit: 5 }
+  { $skip: 10 }
+])
+```
+
+6. `$unwind`: This stage in MongoDB's aggregation pipeline is used to deconstruct an array field from the input documents to output a document for each element of the array. This is particularly useful when you have documents with arrays and you want to process or analyze each element of the array individually.
+
+Assume we have a sales collection:
+```javascript
+db.sales.insertOne({
+  "_id": 1,
+  "orderId": 101,
+  "items": [
+    { "productId": 1, "quantity": 10, "price": 100 },
+    { "productId": 2, "quantity": 5, "price": 200 }
+  ]
+}
+)
+``` 
+
+We want to unwind the items array so that each item becomes its own document, then group by productId to calculate total quantities sold, and finally sort by totalQuantity in descending order.
+
+```javascript
+db.sales.aggregate([
+  // Stage 1: Unwind the items array
+  {
+    $unwind: "$items"
+  },
+  // Stage 2: Group by productId
+  {
+    $group: {
+      _id: "$items.productId",
+      totalQuantity: { $sum: "$items.quantity" },
+      averagePrice: { $avg: "$items.price" }
+    }
+  },
+  // Stage 3: Project the fields
+  {
+    $project: {
+      productId: "$_id",
+      totalQuantity: 1,
+      averagePrice: 1
+    }
+  },
+  // Stage 4: Sort by totalQuantity in descending order
+  {
+    $sort: {
+      totalQuantity: -1
+    }
+  }
+]);
+```
+
+7. `$lookup`: The `$lookup` stage in MongoDB's aggregation framework performs a left outer join to another collection in the same database to filter in documents from the "joined" collection for processing. This is useful for combining data from multiple collections. Take in `from:"collection", localField:"localField", foreignField:"fromFromColl", as:"resltArray"`
+
+#### orders collection
+
+```javascript
+[
+  { "_id": 1, "orderId": 101, "customerId": 1, "amount": 500 },
+  { "_id": 2, "orderId": 102, "customerId": 2, "amount": 300 },
+  { "_id": 3, "orderId": 103, "customerId": 1, "amount": 700 }
+]
+```
+
+#### customers collection
+
+```javascript
+[
+  { "_id": 1, "customerId": 1, "name": "John Doe" },
+  { "_id": 2, "customerId": 2, "name": "Jane Smith" },
+  { "_id": 3, "customerId": 3, "name": "David Brown" }
+]
+```
+We want to join the orders collection with the customers collection to add customer details to each order.
+
+```javascript
+db.orders.aggregate([
+  {
+    $lookup: {
+      from: "customers",            // The target collection
+      localField: "customerId",     // Field from the orders collection
+      foreignField: "customerId",   // Field from the customers collection
+      as: "customerDetails"         // Output array field - Array of documents from the customers collection
+    }
+  },
+  {
+    $unwind: "$customerDetails"     // Deconstructs the array created by $lookup
+  },
+  {
+    $project: {
+      orderId: 1,
+      amount: 1,
+      "customerDetails.name": 1,   // Include specific fields from the joined document customerDetails { "name": "Jane Smith"}  
+      customerAddress: "$customerDetails.address", //If address existed, you can rename it like this
+    }
+  }
+]);
+```
+
+8. **Mathematical Operators**:
+
+```javascript
+{ $add: [ "$quantity", 10 ] }
+{ $subtract: [ "$price", "$discount" ] }
+{ $multiply: [ "$price", "$quantity" ] }
+{ $divide: [ "$total", "$quantity" ] }
+{ $mod: [ "$price", 10 ] }
+```
