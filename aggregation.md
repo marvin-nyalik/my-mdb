@@ -199,3 +199,37 @@ db.orders.aggregate([
 { $divide: [ "$total", "$quantity" ] }
 { $mod: [ "$price", 10 ] }
 ```
+
+9. `$cond`: The $cond operator in MongoDB's aggregation framework allows you to implement conditional logic within your aggregation pipeline. It evaluates a boolean expression and returns one of two specified expressions depending on whether the boolean expression evaluates to true or false.
+
+```javascript
+db.orders.aggregate([
+  {
+    $project: {
+      orderId: 1,
+      amount: 1,
+      category: {
+        $cond: {
+          if: { $gte: ["$amount", 500] },   // If amount is greater than or equal to 500
+          then: "High",                     // Assign "High" category
+          else: "Low"                       // Otherwise, assign "Low" category
+        }
+      }
+    }
+  }
+]);
+```
+
+10. `$ifNull`: The `$ifNull` operator in MongoDB's aggregation framework is used to replace null values with a specified alternative value. This is particularly useful when you want to handle cases where a field might be missing or have a null value and you need to provide a default or substitute value.
+
+```javascript
+db.orders.aggregate([
+  {
+    $project: {
+      orderId: 1,
+      amount: 1,
+      discount: { $ifNull: ["$discount", 0] }   // Replace null with 0 for discount
+    }
+  }
+]);
+```
