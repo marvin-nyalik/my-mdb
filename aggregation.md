@@ -268,3 +268,44 @@ db.orders.aggregate([
   }
 ]);
 ```
+
+## Export Collection to JSON
+After the aggregation pipeline has written the results to the orders_aggregated collection, you can use mongoexport to export the new collection to a JSON file.
+
+```javascript
+mongoexport --uri="mongodb://localhost:27017/yourDatabase" --collection=orders_aggregated --out=output.json --jsonArray
+```
+
+- `--uri`: Connection URI to your MongoDB instance.
+- `--collection`: The name of the collection to export from (in this case, orders_aggregated).
+- `--out`: The output file where the results will be saved.
+- `--jsonArray`: Ensures the output is in JSON array format.
+
+```javascript
+[
+  {
+    "orderID": 1,
+    "orderId": 101,
+    "amount": 500,
+    "customerName": "John Doe",
+    "customerAddress": "123 Elm St",
+    "discount": 50
+  },
+  {
+    "orderID": 2,
+    "orderId": 102,
+    "amount": 300,
+    "customerName": "Jane Smith",
+    "customerAddress": "456 Oak St",
+    "discount": 0
+  },
+  {
+    "orderID": 3,
+    "orderId": 103,
+    "amount": 700,
+    "customerName": "John Doe",
+    "customerAddress": "123 Elm St",
+    "discount": 0
+  }
+]
+```
