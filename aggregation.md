@@ -233,3 +233,38 @@ db.orders.aggregate([
   }
 ]);
 ```
+
+11. `$out`: The $out stage in MongoDB's aggregation pipeline does not produce an output file directly. Instead, it writes the results of the aggregation pipeline to a new collection. This new collection can then be exported using the mongoexport tool.
+
+```javascript
+db.orders.aggregate([
+  {
+    $lookup: {
+      from: "customers",
+      localField: "customerId",
+      foreignField: "customerId",
+      as: "customerDetails"
+    }
+  },
+  {
+    $unwind: "$customerDetails"
+  },
+  {
+    $project: {
+      orderID: "$_id",
+      orderId: 1,
+      amount: 1,
+      customerName: "$customerDetails.name",
+      customerAddress: "$customerDetails.address"
+    }
+  },
+  {
+    $addFields: {
+      discount: { $cond: { if: { $eq: ["$discount", null] }, then: 0, else: "$discount" } }
+    }
+  },
+  {
+    $out: "orders_aggregated" // Specify the name of the new collection to write the results to
+  }
+]);
+```
